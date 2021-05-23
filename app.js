@@ -5,6 +5,7 @@ const DPI_HEIGHT = HEIGHT * 2
 const ROW_COUNTS = 5;
 const PADDING = 40;
 const VIEW_HEIGHT = DPI_HEIGHT - PADDING * 2;
+const VIEW_WIDTH = DPI_WIDTH;
 
 function chart(canvas, data) {
     const ctx = canvas.getContext('2d');
@@ -13,10 +14,45 @@ function chart(canvas, data) {
     canvas.width = DPI_WIDTH;
     canvas.height = DPI_HEIGHT;
 
-    const step = VIEW_HEIGHT / ROW_COUNTS;
-
     const [yMin, yMax] = computeBoundaries(data);
     const yRatio = VIEW_HEIGHT / (yMax - yMin);
+    const xRatio = VIEW_WIDTH / (data.columns[0].length - 2);
+
+    yAxis(ctx, yMin, yMax);
+
+    const xData = data.columns.filter((col) => data.types[col[0]] !== 'line')[0];
+    xAxis(ctx, xData, xRatio);
+
+    const yData = data.columns.filter((col) => data.types[col[0]] === 'line');
+
+
+    yData.map(toCoords(xRatio, yRatio)).forEach((coords, idx) => {
+        const color = data.colors[yData[idx][0]];
+        line(ctx, coords, color);
+    })
+}
+
+function toCoords(xRatio, yRatio) {
+    return (col) => col.map((y, i) => [
+        Math.floor((i - 1) * xRatio),
+        Math.floor(DPI_HEIGHT - PADDING - y * yRatio)
+    ]).filter(i => i !== 0);
+}
+
+function xAxis(ctx, data, xRatio) {
+    const colsCount = 6;
+    const step = Math.round(data.length / colsCount);
+    ctx.beginPath();
+    for (let i =1; i < data.length; i+=step) {
+        const text = new Date(data[i]).toDateString();
+        const x = i * xRatio;
+        ctx.fillText(text.toString(), x, DPI_HEIGHT);
+    }
+    ctx.closePath();
+}
+
+function yAxis(ctx, yMin, yMax) {
+    const step = VIEW_HEIGHT / ROW_COUNTS;
     const textStep = (yMax - yMin) / ROW_COUNTS;
 
     ctx.beginPath();
@@ -32,12 +68,14 @@ function chart(canvas, data) {
     }
     ctx.stroke();
     ctx.closePath();
+}
 
+function line(ctx, coords, color) {
     ctx.beginPath();
     ctx.lineWidth = 4;
-    ctx.strokeStyle = '#ff0000';
-    for (const [x, y] of data) {
-        ctx.lineTo(x, DPI_HEIGHT - PADDING - y * yRatio);
+    ctx.strokeStyle = color;
+    for (const [x, y] of coords) {
+        ctx.lineTo(x, y);
     }
     ctx.stroke();
     ctx.closePath();
@@ -49,8 +87,8 @@ function computeBoundaries({columns, types}) {
     let min;
     let max;
 
-    columns.forEach((col) =>{
-        if (types[col[0]] !== 'line'){
+    columns.forEach((col) => {
+        if (types[col[0]] !== 'line') {
             return;
         }
         if (typeof min !== 'number') min = col[1];
