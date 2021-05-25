@@ -1,0 +1,26 @@
+{
+  "name": "telegram-contest",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "parcel-bundler": "^1.12.5",
+    "sass": "^1.34.0"
+  },
+  "scripts": {
+    "serve": "parcel ./src/index.html -p 5500",
+    "build": "parcel build ./src/index.html -p 5500"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sgaraba/telegram-contest.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sgaraba/telegram-contest/issues"
+  },
+  "homepage": "https://github.com/sgaraba/telegram-contest#readme"
+}
